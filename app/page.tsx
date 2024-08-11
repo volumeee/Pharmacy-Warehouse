@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import MedicineTable from "./components/medicine/MedicineTable";
 import Layout from "./components/layout/Layout";
-import { Medicine } from "@prisma/client";
+import { Medicine } from "./types/MedicineInterface";
 
 const HomePage = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -76,8 +76,12 @@ const HomePage = () => {
       <MedicineTable
         medicines={medicines}
         loading={loading}
-        onAddMedicine={addMedicine}
-        onUpdateMedicine={updateMedicine}
+        onAddMedicine={(medicine) =>
+          addMedicine(
+            medicine as Omit<Medicine, "id" | "createdAt" | "updatedAt">
+          )
+        }
+        onUpdateMedicine={(medicine) => updateMedicine(medicine as Medicine)}
         onDeleteMedicine={deleteMedicine}
       />
     </Layout>

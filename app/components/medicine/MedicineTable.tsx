@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Medicine } from "@prisma/client";
 import MedicineForm from "./MedicineForm";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { Medicine } from "@/app/types/MedicineInterface";
 
 interface MedicineTableProps {
   medicines: Medicine[];
