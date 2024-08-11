@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Medicine {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  quantity    Int
+  minStock    Int
+  reorderLevel Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Foreign key and relation
+  supplierId  Int
+  supplier    Supplier  @relation(fields: [supplierId], references: [id])
+}
+
+model Supplier {
+  id          Int        @id @default(autoincrement())
+  name        String
+  contactInfo String
+  terms       String
+  medicines   Medicine[] // Relation to Medicine
+}
+
+
+
