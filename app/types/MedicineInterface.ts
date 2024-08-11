@@ -9,7 +9,7 @@ export interface Medicine {
   minStock: number;
   quantity: number;
   reorderLevel: number;
-  suplierId: number;
+  supplierId: number;
 }
 
 export interface Supplier {

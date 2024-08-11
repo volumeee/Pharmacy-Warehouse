@@ -1,7 +1,5 @@
-"use client";
-
+import { Medicine } from "@/app/types/MedicineInterface";
 import React, { useState, useEffect } from "react";
-import { Medicine } from "@prisma/client";
 
 interface MedicineFormProps {
   onSubmit: (medicine: Medicine) => void;

@@ -231,9 +231,19 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <MedicineForm
-              onSubmit={
-                currentMedicine?.id ? handleUpdateMedicine : handleAddMedicine
-              }
+              onSubmit={(medicine) => {
+                if (currentMedicine?.id) {
+                  handleUpdateMedicine({
+                    ...medicine,
+                    description: medicine.description || "",
+                  });
+                } else {
+                  handleAddMedicine({
+                    ...medicine,
+                    description: medicine.description || "",
+                  });
+                }
+              }}
               initialData={currentMedicine}
               onCancel={handleClose}
             />
