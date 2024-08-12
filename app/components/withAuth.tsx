@@ -1,11 +1,10 @@
-// components/withAuth.tsx
+"use client";
+
 import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-type WithAuthProps = {
-  // Define any props that are needed for the HOC, if any
-};
+type WithAuthProps = {};
 
 const withAuth = <P extends WithAuthProps>(
   WrappedComponent: React.ComponentType<P>
