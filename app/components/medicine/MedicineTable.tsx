@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MedicineForm from "./MedicineForm";
 import Skeleton from "react-loading-skeleton";
@@ -8,7 +8,8 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 interface MedicineTableProps {
-  medicines: (Medicine & { supplierId: number })[];
+  medicines: Medicine[];
+  suppliers: Supplier[];
   loading: boolean;
   onAddMedicine: (
     medicine: Omit<Medicine, "id" | "createdAt" | "updatedAt">
@@ -19,6 +20,7 @@ interface MedicineTableProps {
 
 const MedicineTable: React.FC<MedicineTableProps> = ({
   medicines,
+  suppliers,
   loading,
   onAddMedicine,
   onUpdateMedicine,
@@ -29,25 +31,6 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const response = await fetch("/api/supplier");
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setSuppliers(data);
-        } else {
-          console.error("Unexpected response format for suppliers:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-      }
-    };
-
-    fetchSuppliers();
-  }, []);
 
   const getSupplierNameById = (id: number) => {
     const supplier = suppliers.find((supplier) => supplier.id === id);
@@ -67,8 +50,8 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
         ReorderLevel: med.reorderLevel,
         Supplier: getSupplierNameById(med.supplierId),
         Price: formatPrice(med.price),
-        CreatedAt: new Date(med.createdAt).toLocaleDateString(), // Konversi ke Date
-        UpdatedAt: new Date(med.updatedAt).toLocaleDateString(), // Konversi ke Date
+        CreatedAt: new Date(med.createdAt).toLocaleDateString(),
+        UpdatedAt: new Date(med.updatedAt).toLocaleDateString(),
       }))
     );
     const workbook = XLSX.utils.book_new();

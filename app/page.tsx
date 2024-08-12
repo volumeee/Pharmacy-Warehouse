@@ -3,23 +3,57 @@
 import React, { useState, useEffect } from "react";
 import MedicineTable from "./components/medicine/MedicineTable";
 import Layout from "./components/layout/Layout";
-import { Medicine } from "./types/MedicineInterface";
+import { Medicine, Supplier } from "./types/MedicineInterface";
 
 const HomePage = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/medicine")
-      .then((response) => response.json())
-      .then((data) => {
-        setMedicines(data); // Temporarily remove any mapping or transformation
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchMedicines = async () => {
+      try {
+        const response = await fetch("/api/medicine");
+        if (!response.ok) throw new Error("Failed to fetch medicines");
+        const medicineData: Medicine[] = await response.json();
+        setMedicines(medicineData);
+
+        const supplierIds = Array.from(
+          new Set(medicineData.map((med) => med.supplierId).filter((id) => id))
+        );
+
+        if (supplierIds.length > 0) {
+          fetchSuppliers(supplierIds);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
         console.error("Error fetching medicines:", error);
         setLoading(false);
-      });
+      }
+    };
+
+    const fetchSuppliers = async (supplierIds: number[]) => {
+      try {
+        const response = await fetch("/api/supplier");
+        if (!response.ok) throw new Error("Failed to fetch suppliers");
+        const supplierData: Supplier[] = await response.json();
+        if (!Array.isArray(supplierData)) {
+          throw new Error("Unexpected response format for suppliers");
+        }
+
+        const filteredSuppliers = supplierData.filter((supplier) =>
+          supplierIds.includes(supplier.id)
+        );
+        setSuppliers(filteredSuppliers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchMedicines();
   }, []);
 
   const addMedicine = (
@@ -68,6 +102,7 @@ const HomePage = () => {
     <Layout>
       <MedicineTable
         medicines={medicines}
+        suppliers={suppliers}
         loading={loading}
         onAddMedicine={(medicine) =>
           addMedicine(
