@@ -1,23 +1,25 @@
-import React from "react";
+import Link from "next/link";
 
-const Sidebar: React.FC = () => {
+const Sidebar = () => {
   return (
-    <aside className="w-64 bg-gray-900 text-white p-4">
-      <nav>
+    <div className="w-64 bg-gray-800 text-white">
+      <div className="p-4">
+        <h1 className="text-xl font-bold">Dashboard</h1>
+      </div>
+      <nav className="mt-4">
         <ul>
-          <li className="mb-2">
-            <a href="/" className="block py-2 px-4 hover:bg-gray-700 rounded">
-              Home
-            </a>
+          <li className="py-2 px-4 hover:bg-gray-700">
+            <Link href="/">Dashboard</Link>
           </li>
-          <li className="mb-2">
-            <a href="#" className="block py-2 px-4 hover:bg-gray-700 rounded">
-              Medicines
-            </a>
+          <li className="py-2 px-4 hover:bg-gray-700">
+            <Link href="/pages/medicine">Medicine</Link>
+          </li>
+          <li className="py-2 px-4 hover:bg-gray-700">
+            <Link href="/pages/supplier">Supplier</Link>
           </li>
         </ul>
       </nav>
-    </aside>
+    </div>
   );
 };
 
