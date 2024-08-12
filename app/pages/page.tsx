@@ -1,5 +1,6 @@
 import React from "react";
 import Layout from "../components/layout/Layout";
+import withAuth from "../components/withAuth";
 
 const DashboardScreen = () => {
   return (
@@ -9,4 +10,4 @@ const DashboardScreen = () => {
   );
 };
 
-export default DashboardScreen;
+export default withAuth(DashboardScreen);

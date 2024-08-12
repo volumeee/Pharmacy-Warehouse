@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import MedicineScreen from "./pages/medicine/page";
 import DashboardScreen from "./pages/page";
 import SupplierScreen from "./pages/supplier/page";
@@ -13,9 +13,9 @@ const HomePage = () => {
     switch (pathname) {
       case "/":
         return <DashboardScreen />;
-      case "/pages/medicine":
+      case "/medicine":
         return <MedicineScreen />;
-      case "/pages/supplier":
+      case "/supplier":
         return <SupplierScreen />;
       default:
         return <DashboardScreen />;

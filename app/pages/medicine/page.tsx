@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import MedicineTable from "../../components/medicine/MedicineTable";
 import Layout from "../../components/layout/Layout";
 import { Medicine, Supplier } from "../../types/MedicineInterface";
+import withAuth from "@/app/components/withAuth";
 
 const MedicineScreen = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -116,4 +117,4 @@ const MedicineScreen = () => {
   );
 };
 
-export default MedicineScreen;
+export default withAuth(MedicineScreen);
