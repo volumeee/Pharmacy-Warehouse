@@ -13,14 +13,7 @@ const HomePage = () => {
     fetch("/api/medicine")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data); // Add this line to check the structure of the data
-        const formattedData = Array.isArray(data)
-          ? data.map((item: any) => ({
-              ...item,
-              description: item.description ?? null,
-            }))
-          : []; // Handle case where data is not an array
-        setMedicines(formattedData);
+        setMedicines(data); // Temporarily remove any mapping or transformation
         setLoading(false);
       })
       .catch((error) => {

@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         quantity: body.quantity,
         minStock: body.minStock,
         reorderLevel: body.reorderLevel,
-        supplier: body.supplier,
+        supplierId: body.supplierId, // Use supplierId instead of supplier
       },
     });
 
@@ -59,7 +59,7 @@ export async function PUT(request: Request) {
         quantity: body.quantity,
         minStock: body.minStock,
         reorderLevel: body.reorderLevel,
-        supplier: body.supplier,
+        supplierId: body.supplierId, // Use supplierId instead of supplier
       },
     });
 

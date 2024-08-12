@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import MedicineForm from "./MedicineForm";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { Medicine } from "@/app/types/MedicineInterface";
+import { Medicine, Supplier } from "@/app/types/MedicineInterface";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface MedicineTableProps {
-  medicines: Medicine[];
+  medicines: (Medicine & { supplierId: number })[];
   loading: boolean;
   onAddMedicine: (
     medicine: Omit<Medicine, "id" | "createdAt" | "updatedAt">
@@ -26,11 +29,56 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await fetch("/api/supplier");
+        const data: Supplier[] = await response.json();
+        setSuppliers(data);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
+
+    fetchSuppliers();
+  }, []);
+
+  const getSupplierNameById = (id: number) => {
+    const supplier = suppliers.find((supplier) => supplier.id === id);
+    return supplier ? supplier.name : "Unknown Supplier";
+  };
+
+  const exportToExcel = (
+    medicines: Medicine[],
+    getSupplierNameById: (id: number) => string,
+    formatPrice: (price: number) => string
+  ) => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      medicines.map((med) => ({
+        Name: med.name,
+        Description: med.description,
+        Quantity: med.quantity,
+        ReorderLevel: med.reorderLevel,
+        Supplier: getSupplierNameById(med.supplierId),
+        Price: formatPrice(med.price),
+        CreatedAt: new Date(med.createdAt).toLocaleDateString(), // Konversi ke Date
+        UpdatedAt: new Date(med.updatedAt).toLocaleDateString(), // Konversi ke Date
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Medicines");
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+    saveAs(blob, "medicines.xlsx");
+  };
 
   const handleOpen = (medicine?: Partial<Medicine>) => {
     setCurrentMedicine(medicine || {});
     setOpen(true);
   };
+
   const handleClose = () => setOpen(false);
 
   const handleAddMedicine = (
@@ -81,21 +129,24 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
     setCurrentPage(1);
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.slice(0, maxLength) + "...";
-    }
-    return text;
-  };
-
   return (
     <>
-      <button
-        onClick={() => handleOpen()}
-        className="mb-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-      >
-        Add Drug
-      </button>
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={() => handleOpen()}
+          className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+        >
+          Add Medicine
+        </button>
+        <button
+          onClick={() =>
+            exportToExcel(medicines, getSupplierNameById, formatPrice)
+          }
+          className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+        >
+          Export to Excel
+        </button>
+      </div>
       <div className="bg-white shadow-md rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-2">
@@ -128,7 +179,9 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
               <tr>
                 <th className="py-2 px-2 border-b w-12">No</th>
                 <th className="py-2 px-4 border-b w-1/4">Name</th>
-                <th className="py-2 px-4 border-b w-1/2">Description</th>
+                <th className="py-2 px-4 border-b w-1/6">Quantity</th>
+                <th className="py-2 px-4 border-b w-1/6">Reorder Level</th>
+                <th className="py-2 px-4 border-b w-1/6">Supplier</th>
                 <th className="py-2 px-4 border-b w-1/6">Price</th>
                 <th className="py-2 px-4 border-b w-1/6">Actions</th>
               </tr>
@@ -152,6 +205,12 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
                       <td className="py-2 px-4 border-b">
                         <Skeleton />
                       </td>
+                      <td className="py-2 px-4 border-b">
+                        <Skeleton />
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                        <Skeleton />
+                      </td>
                     </tr>
                   ))
                 : currentItems.map((medicine, index) => (
@@ -159,11 +218,15 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
                       <td className="py-2 px-4 border-b text-center">
                         {indexOfFirstItem + index + 1}
                       </td>
-                      <td className="py-2 px-4 border-b">
-                        {truncateText(medicine.name, 20)}
+                      <td className="py-2 px-4 border-b">{medicine.name}</td>
+                      <td className="py-2 px-4 border-b text-center">
+                        {medicine.quantity}
                       </td>
-                      <td className="py-2 px-4 border-b">
-                        {truncateText(medicine.description || "N/A", 30)}
+                      <td className="py-2 px-4 border-b text-center">
+                        {medicine.reorderLevel}
+                      </td>
+                      <td className="py-2 px-4 border-b text-center">
+                        {getSupplierNameById(medicine.supplierId)}
                       </td>
                       <td className="py-2 px-4 border-b truncate">
                         {formatPrice(medicine.price)}
@@ -227,29 +290,37 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
         </div>
       </div>
 
-      {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <MedicineForm
-              onSubmit={(medicine) => {
-                if (currentMedicine?.id) {
-                  handleUpdateMedicine({
-                    ...medicine,
-                    description: medicine.description || "",
-                  });
-                } else {
-                  handleAddMedicine({
-                    ...medicine,
-                    description: medicine.description || "",
-                  });
-                }
-              }}
-              initialData={currentMedicine}
-              onCancel={handleClose}
-            />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-lg"
+              initial={{ y: "-100vh" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100vh" }}
+              transition={{ duration: 0.3 }}
+            >
+              <MedicineForm
+                onSubmit={(medicine) => {
+                  if (currentMedicine?.id) {
+                    handleUpdateMedicine(medicine);
+                  } else {
+                    handleAddMedicine(medicine);
+                  }
+                }}
+                initialData={currentMedicine}
+                onCancel={handleClose}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
