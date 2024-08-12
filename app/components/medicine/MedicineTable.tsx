@@ -35,8 +35,12 @@ const MedicineTable: React.FC<MedicineTableProps> = ({
     const fetchSuppliers = async () => {
       try {
         const response = await fetch("/api/supplier");
-        const data: Supplier[] = await response.json();
-        setSuppliers(data);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setSuppliers(data);
+        } else {
+          console.error("Unexpected response format for suppliers:", data);
+        }
       } catch (error) {
         console.error("Error fetching suppliers:", error);
       }
